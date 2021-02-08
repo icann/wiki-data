@@ -6,6 +6,8 @@ This repo holds scripts used for making a dataset of domain names that is extrac
 
 # Software
 
+Both of the programs below store logs and output files in `~/wikipedia-dataset`", which they create if it is not already there.
+
 ## `wiki_get_domains_from_databases.py`
 
 This program collects the relevant databases from Wikipedia, processes each file.

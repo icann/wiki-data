@@ -69,7 +69,7 @@ def get_dns_for_one_name(this_name):
 
 if __name__ == "__main__":
 	# Directory locations
-	main_dir = os.path.expanduser("~/wikepedia-dataset")
+	main_dir = os.path.expanduser("~/wikipedia-dataset")
 	
 	# Set up the logging and alert mechanisms
 	log_file_name = "{}/log.txt".format(main_dir)

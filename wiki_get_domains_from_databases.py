@@ -112,7 +112,7 @@ def process_one_file(this_file):
 
 if __name__ == "__main__":
 	# Directory locations
-	main_dir = os.path.expanduser("~/wikepedia-dataset")
+	main_dir = os.path.expanduser("~/wikipedia-dataset")
 	originals_dir = "{}/Originals".format(main_dir)
 	domains_dir = "{}/Domains".format(main_dir)
 	# Make sure each directory exists
