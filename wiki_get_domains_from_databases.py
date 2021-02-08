@@ -150,7 +150,7 @@ if __name__ == "__main__":
 		help="Replace the {} file if it already exists".format(all_domains_filename))
 	this_parser.add_argument("--date", action="store", dest="date", default="",
 		help="Date to use for pulling sources")
-	this_parser.add_argument("--sources", action="store", dest="sources", default="wikimedia.mirror.us.dev",
+	this_parser.add_argument("--sources", action="store", dest="sources", default="dumps.wikimedia.your.org",
 		help="Domain name to get sources from")
 	this_parser.add_argument("--subset_size", action="store", dest="subset_size", type=int, default=150000,
 		help="Size of subset file to keep")
