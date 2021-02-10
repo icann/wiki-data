@@ -9,14 +9,14 @@ except:
 
 def get_dns_for_one_name(this_name):
 	# Takes a domain name, does a query using getdns_query, and returns a dict of information about it
-	dict_to_return = {"4": [], "6": [], "D": False}
+	dict_to_return = {"4": [], "6": [], "D": 0}
 	# Using a temp file to hold two commands lets getdns_query run the two queries in parallel
 	with tempfile.NamedTemporaryFile(mode="w+t") as temp_f:
 		temp_file_name = temp_f.name
 		temp_f.write("-j -t 4000 +dnssec {0} a\n-j -t 4000 {0} aaaa\n".format(this_name))
 		temp_f.flush()
 		try:
-			r = subprocess.run("getdns_query -a -B -F {}".format(temp_file_name), shell=True, capture_output=True, encoding="utf-8", check=True)
+			r = subprocess.run("getdns_query -a -B -F {}".format(temp_file_name), shell=True, capture_output=True, encoding="latin-1", check=True)
 		except Exception as e:
 			log("During lookup on {}, got '{}'".format(this_name, e))
 			return dict_to_return
@@ -30,7 +30,7 @@ def get_dns_for_one_name(this_name):
 	try:
 		a_dnssec_dict = json.loads(a_dnssec_reply)
 	except Exception as e:
-		debug("Bad JSON for a_dnssec_dict'{}' for {}: {}".format(e, this_name, a_dnssec_reply))
+		debug("Bad JSON for a_dnssec_dict '{}' for {}: {}".format(e, this_name, a_dnssec_reply))
 		return dict_to_return
 	# Parse for A addresses; if there are no A addresses, return {}
 	a_addr_list = a_dnssec_dict.get("just_address_answers")
@@ -48,7 +48,7 @@ def get_dns_for_one_name(this_name):
 	try:
 		aaaa_dict = json.loads(aaaa_reply)
 	except Exception as e:
-		debug("Bad JSON for aaaa_reply'{}' for {}: {}".format(e, this_name, a_dnssec_reply))
+		debug("Bad JSON for aaaa_reply '{}' for {}: {}".format(e, this_name, a_dnssec_reply))
 		return dict_to_return
 	aaaa_addr_list = aaaa_dict.get("just_address_answers")
 	try:
@@ -60,8 +60,7 @@ def get_dns_for_one_name(this_name):
 		return dict_to_return
 	# Get DNSSEC info
 	try:
-		if (a_dnssec_dict["replies_tree"])[0]["dnssec_status"] == 400:
-			dict_to_return["D"] = True
+		dict_to_return["D"] = a_dnssec_dict["replies_tree"][0]["dnssec_status"]
 	except Exception as e:
 		log("For DNSSEC checking on {}, got {}:\n{}".format(this_name, e, a_dnssec_dict["replies_tree"]))
 		return dict_to_return
@@ -127,13 +126,13 @@ if __name__ == "__main__":
 	dnssec_total = 0
 	ipv6_total = 0
 	for this_name in dns_results:
-		if dns_results[this_name]["D"]:
+		if dns_results[this_name]["D"] == 400:
 			dnssec_total += 1
 		if len(dns_results[this_name]["6"]) > 0:
 			ipv6_total += 1
 	log("Processing {} domains took {} seconds".format(len(dns_results), int(time.time()-dns_time_start)))
 	log("Of {} names in, {} ({}%) had IPv4 addresses".format(len(all_names), len(all_names) - len(dns_failed), 100 - int(100*(len(dns_failed)/len(all_names)))))
-	log("Of those domains, {}% had DNSSEC and {}% had IPv6 addresses".format(int(100*(dnssec_total/len(dns_results))), int(100*(ipv6_total/len(dns_results)))))
+	log("Of those domains, {}% had DNSSEC response of 400 and {}% had IPv6 addresses".format(int(100*(dnssec_total/len(dns_results))), int(100*(ipv6_total/len(dns_results)))))
 	
 	# Keep the list of just the samples
 	dns_samples = {}
