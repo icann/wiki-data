@@ -25,9 +25,9 @@ def process_one_file(this_file):
 			return
 		# Use external gzip instead of Python's library because Python's library fails for odd reasons when gunzip does not
 		try:
-			subprocess.run("gunzip -c {} >{}".format(this_file, temp_file_name), shell=True, capture_output=False, check=True)
+			subprocess.run(f"gunzip -c {this_file} >{temp_file_name}", shell=True, capture_output=False, check=True)
 		except Exception as e:
-			log("Could not unzip {}: {}".format(this_file, e))
+			log(f"Could not unzip {this_file}: {e}")
 			return
 		in_f = open(temp_file_name, mode="rt", encoding="latin-1")
 		# Here is where a system on a computer that was running MySQL would just load the files using MySQL commands.
@@ -41,10 +41,10 @@ def process_one_file(this_file):
 			if len(this_line) < 1000:
 				continue
 			if not this_line[0:35] == "INSERT INTO `externallinks` VALUES ":
-				debug("Found a long line with bad beginning '{}' in {}.".format(this_line[0:35], this_file))
+				debug(f"Found a long line with bad beginning '{this_line[0:35]}' in {this_file}.")
 				return
 			if not this_line.endswith(";\n"):
-				debug("Found a long line that didn't end with semicolon: '{}' in {}. ".format(this_line[-25:], this_file))
+				debug(f"Found a long line that didn't end with semicolon: '{this_line[-25:]}' in {this_file}. ")
 				return
 			real_line = this_line[36:-2]  # Strip off "INSERT INTO..." and ";\n"
 			# Each INSERT INTO has multiple tuples for insertion
@@ -104,17 +104,17 @@ def process_one_file(this_file):
 				# Finally, put it in the set
 				just_names_unique.add(domain_name)
 		# Write out file in domains_dir
-		f_out = open("{}/{}.txt".format(domains_dir, this_short_name), "wt")
+		f_out = open(f"{domains_dir}/{this_short_name}.txt", "wt")
 		for this_domain in just_names_unique:
-			f_out.write("{}\n".format(this_domain))
+			f_out.write(f"{this_domain}\n")
 		f_out.close()
 		return
 
 if __name__ == "__main__":
 	# Directory locations
 	main_dir = os.path.expanduser("~/wikipedia-dataset")
-	originals_dir = "{}/Originals".format(main_dir)
-	domains_dir = "{}/Domains".format(main_dir)
+	originals_dir = f"main_dir{}/Originals"
+	domains_dir = f"{main_dir}/Domains"
 	# Make sure each directory exists
 	for this_dir in [main_dir, originals_dir, domains_dir]:
 		try:
@@ -122,11 +122,11 @@ if __name__ == "__main__":
 		except:
 			pass
 	
-	all_domains_filename = "{}/all_domains.txt".format(main_dir)
+	all_domains_filename = f"{main_dir}/all_domains.txt"
 	
 	# Set up the logging and alert mechanisms
-	log_file_name = "{}/log.txt".format(main_dir)
-	debug_file_name = "{}/debug.txt".format(main_dir)
+	log_file_name = f"{main_dir}/log.txt"
+	debug_file_name = f"{main_dir}/debug.txt"
 	this_log = logging.getLogger("logging")
 	this_log.setLevel(logging.INFO)
 	this_debug = logging.getLogger("alerts")
@@ -142,12 +142,12 @@ if __name__ == "__main__":
 	def debug(log_message):
 		this_debug.info(log_message)
 	def die(error_message):
-		log("{}. Exiting.".format(error_message))
+		log(f"{error_message}. Exiting.")
 		exit()
 	
 	this_parser = argparse.ArgumentParser()
 	this_parser.add_argument("--replace", action="store_true", dest="replace",
-		help="Replace the {} file if it already exists".format(all_domains_filename))
+		help="fReplace the {all_domains_filename} file if it already exists")
 	this_parser.add_argument("--date", action="store", dest="date", default="",
 		help="Date to use for pulling sources")
 	this_parser.add_argument("--sources", action="store", dest="sources", default="dumps.wikimedia.your.org",
@@ -157,32 +157,32 @@ if __name__ == "__main__":
 	opts = this_parser.parse_args()
 
 	if (not opts.replace) and os.path.exists(all_domains_filename):
-		die("Didn't start because {} exists and --replace was not specified".format(all_domains_filename))
+		die(f"Didn't start because {all_domains_filename} exists and --replace was not specified")
 
 	log("Started wiki_get_domains_from_databases run")
 
 	# Where to find the sources for the domain names
-	log("Using {} for sources".format(opts.sources))
-	source_doc = "https://{}/backup-index.html".format(opts.sources)
+	log(f"Using {opts.sources} for sources")
+	source_doc = f"https://{opts.sources}/backup-index.html"
 	
 	# The the date specified, or default to the first day of the current month
 	if opts.date:
 		source_date = opts.date
 	else:
 		today_date = datetime.date.today()
-		source_date = "{}{:02}01".format(today_date.year, today_date.month)
-	log("Using {} for source date".format(source_date))
+		source_date = f"{today_date.year}{today_date.month:02}01"
+	log(f"Using {source_date} for source date")
 
 	names_of_wikipedias = set()
 	# Get the main file that lists all the types of wikis
 	try:
-		r = subprocess.run("curl --silent {}".format(source_doc), shell=True, capture_output=True, check=True)
+		r = subprocess.run(f"curl --silent {source_doc}", shell=True, capture_output=True, check=True)
 	except Exception as e:
-		die("Getting {} failed with '{}'.".format(source_doc, e))
+		die(f"Getting {source_doc} failed with '{e}'.")
 	in_all = r.stdout.decode("utf-8")
 	for this_string in  re.finditer("\".*?wiki.*?/20", in_all):
 		names_of_wikipedias.add(this_string.group()[1:-3])
-	log("Found {} wiki names in {}".format(len(names_of_wikipedias), source_doc))
+	log(f"Found {len(names_of_wikipedias)} wiki names in {source_doc}")
 
 	# Get each file
 	#   This is done without mulitprocessing in order to not overload the mirror server.
@@ -193,24 +193,24 @@ if __name__ == "__main__":
 	for this_name in sorted(names_of_wikipedias):
 		if this_name in do_not_get:
 			continue
-		file_name = "{n:}-{d:}-externallinks.sql.gz".format(n=this_name, d=source_date)
-		full_out_file_name = "{}/{}".format(originals_dir, file_name)
+		file_name = f"{this_name}-{source_date}-externallinks.sql.gz"
+		full_out_file_name = f"{originals_dir}/{file_name}"
 		# Don't get files that are already there
 		if os.path.exists(full_out_file_name):
 			continue
-		this_url = "https://{s:}/{n:}/{d:}/{f:}".format(s=opts.sources, n=this_name, d=source_date, f=file_name)
+		this_url = f"https://{opts.sources}/{this_name}/{source_date}/{file_name}"
 		try:
-			r = subprocess.run("curl {} --silent -o {}".format(this_url, full_out_file_name), shell=True, capture_output=False, check=True)
+			r = subprocess.run(f"curl {this_url} --silent -o {full_out_file_name}", shell=True, capture_output=False, check=True)
 		except Exception:
 			names_without_content.append(this_name)
 			continue
 	if len(names_without_content) > 0:
-		log("{} names without content: {}".format(len(names_without_content), " ".join(names_without_content)))
+		log(f"{len(names_without_content)} names without content: {" ".join(names_without_content)}")
 	log("Done getting files")
 
 	log("Starting processing database files for domain names")
 	# There is no strong need to run this under concurrent.futures because it takes around an hour even single-threaded
-	all_database_files = sorted(glob.glob("{}/*".format(originals_dir)))
+	all_database_files = sorted(glob.glob(f"{originals_dir}/*"))
 	for this_file in all_database_files:
 		process_one_file(this_file)
 	# Note that the result of this is a set of files, each of which has the unique domain names for that language
@@ -218,27 +218,26 @@ if __name__ == "__main__":
 	
 	# Colllect all the domain files, make a master set of domians
 	log("Starting collecting domains from processed databases")
-	all_domain_files = sorted(glob.glob("{}/*".format(domains_dir)))
+	all_domain_files = sorted(glob.glob(f"{domains_dir}/*"))
 	full_domain_set = set()
 	for this_file in all_domain_files:
 		for this_domain in open(this_file, "rt").read().splitlines():
 			full_domain_set.add(this_domain)
 
 	# Save the file
-	log("Saving all_domains.txt with {} names".format(len(full_domain_set)))
-	out_f = open(all_domains_filename, "wt")
+	log(f"Saving all_domains.txt with {len(full_domain_set)} names")
 	for this_domain in full_domain_set:
-		out_f.write("{}\n".format(this_domain))
+		out_f.write(f"{this_domain}\n")
 	out_f.close()
 	
 	# Pick a random sample and save it
-	log("Making a sample of {} names".format(opts.subset_size))
+	log("Making a sample of {opts.subset_size} names")
 	rand_domains = random.sample(list(full_domain_set), opts.subset_size)
-	sample_file_name = "{}/sample-of-{}.txt".format(main_dir, opts.subset_size)
+	sample_file_name = f"{main_dir}/sample-of-{opts.subset_size}.txt"
 	out_f = open(sample_file_name, "wt")
 	for this_domain in rand_domains:
-		out_f.write("{}\n".format(this_domain))
+		out_f.write(f"{this_domain}\n")
 	out_f.close()
-	log("Saved {}".format(sample_file_name))
+	log(f"Saved {sample_file_name}")
 		
 	log("Finished wiki_get_domains_from_databases run")

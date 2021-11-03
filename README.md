@@ -2,7 +2,7 @@
 
 This repo holds scripts used for making a dataset of domain names that is extracted from the external links on pages from all the language-specific Wikipedia sites.
 
-(When the new OCTO document is published, put a link here)
+Published as OCTO-023: https://www.icann.org/octo-023-en.pdf
 
 # Software
 
