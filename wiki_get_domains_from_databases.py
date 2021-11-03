@@ -113,7 +113,7 @@ def process_one_file(this_file):
 if __name__ == "__main__":
 	# Directory locations
 	main_dir = os.path.expanduser("~/wikipedia-dataset")
-	originals_dir = f"main_dir{}/Originals"
+	originals_dir = f"{main_dir}/Originals"
 	domains_dir = f"{main_dir}/Domains"
 	# Make sure each directory exists
 	for this_dir in [main_dir, originals_dir, domains_dir]:
@@ -121,9 +121,7 @@ if __name__ == "__main__":
 			os.mkdir(this_dir)
 		except:
 			pass
-	
-	all_domains_filename = f"{main_dir}/all_domains.txt"
-	
+		
 	# Set up the logging and alert mechanisms
 	log_file_name = f"{main_dir}/log.txt"
 	debug_file_name = f"{main_dir}/debug.txt"
@@ -156,6 +154,7 @@ if __name__ == "__main__":
 		help="Size of subset file to keep")
 	opts = this_parser.parse_args()
 
+	all_domains_filename = f"{main_dir}/all_domains.txt"
 	if (not opts.replace) and os.path.exists(all_domains_filename):
 		die(f"Didn't start because {all_domains_filename} exists and --replace was not specified")
 
@@ -205,7 +204,7 @@ if __name__ == "__main__":
 			names_without_content.append(this_name)
 			continue
 	if len(names_without_content) > 0:
-		log(f"{len(names_without_content)} names without content: {" ".join(names_without_content)}")
+		log(f"{len(names_without_content)} names without content: {' '.join(names_without_content)}")
 	log("Done getting files")
 
 	log("Starting processing database files for domain names")
@@ -226,18 +225,18 @@ if __name__ == "__main__":
 
 	# Save the file
 	log(f"Saving all_domains.txt with {len(full_domain_set)} names")
-	for this_domain in full_domain_set:
-		out_f.write(f"{this_domain}\n")
-	out_f.close()
+	with open(all_domains_filename, mode="wt") as out_f:
+		for this_domain in full_domain_set:
+			out_f.write(f"{this_domain}\n")
+	log(f"Saved {all_domains_filename}")
 	
 	# Pick a random sample and save it
 	log("Making a sample of {opts.subset_size} names")
 	rand_domains = random.sample(list(full_domain_set), opts.subset_size)
 	sample_file_name = f"{main_dir}/sample-of-{opts.subset_size}.txt"
-	out_f = open(sample_file_name, "wt")
-	for this_domain in rand_domains:
-		out_f.write(f"{this_domain}\n")
-	out_f.close()
+	with open(sample_file_name, "wt") as out_f:
+		for this_domain in rand_domains:
+			out_f.write(f"{this_domain}\n")
 	log(f"Saved {sample_file_name}")
 		
 	log("Finished wiki_get_domains_from_databases run")

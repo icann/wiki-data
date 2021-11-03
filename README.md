@@ -14,7 +14,7 @@ This program collects the relevant databases from Wikipedia, processes each file
 
 The command line options are:
 
-- `--replace` is only needed if you already have created the database and have not deleted it befor the next run.
+- `--replace` is only needed if you already have created the database and have not deleted it before the next run.
 - `--date` sets the date to be used as the source date. If not specified, it defaults to the first day of the current month. Informal observations show that it takes at least a few days for the database backup to complete.
 - `--sources` is the domain name from which to get the Wikipedia data. It defaults to a server in the US. Note that some mirrors rate limit downloads after a set limit, so downloading might take a while.
 - `--subset_size` is the number of domain namnes to store in the sample file. It defaults to 150,000, which should be sufficient to make a real subset of 100,000 names with IPv4 addresses.
