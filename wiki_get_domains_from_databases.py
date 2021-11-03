@@ -121,6 +121,8 @@ if __name__ == "__main__":
 			os.mkdir(this_dir)
 		except:
 			pass
+	# This file needs to be defined before options are parsed
+	all_domains_filename = f"{main_dir}/all-domains.txt"
 		
 	# Set up the logging and alert mechanisms
 	log_file_name = f"{main_dir}/log.txt"
@@ -154,7 +156,6 @@ if __name__ == "__main__":
 		help="Size of subset file to keep")
 	opts = this_parser.parse_args()
 
-	all_domains_filename = f"{main_dir}/all_domains.txt"
 	if (not opts.replace) and os.path.exists(all_domains_filename):
 		die(f"Didn't start because {all_domains_filename} exists and --replace was not specified")
 
@@ -231,7 +232,7 @@ if __name__ == "__main__":
 	log(f"Saved {all_domains_filename}")
 	
 	# Pick a random sample and save it
-	log("Making a sample of {opts.subset_size} names")
+	log(f"Making a sample of {opts.subset_size} names")
 	rand_domains = random.sample(list(full_domain_set), opts.subset_size)
 	sample_file_name = f"{main_dir}/sample-of-{opts.subset_size}.txt"
 	with open(sample_file_name, "wt") as out_f:
