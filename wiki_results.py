@@ -13,24 +13,24 @@ def get_dns_for_one_name(this_name):
 	# Using a temp file to hold two commands lets getdns_query run the two queries in parallel
 	with tempfile.NamedTemporaryFile(mode="w+t") as temp_f:
 		temp_file_name = temp_f.name
-		temp_f.write("-j -t 4000 +dnssec {0} a\n-j -t 4000 {0} aaaa\n".format(this_name))
+		temp_f.write(f"-j -t 4000 +dnssec {this_name} a\n-j -t 4000 {this_name} aaaa\n")
 		temp_f.flush()
 		try:
-			r = subprocess.run("getdns_query -a -B -F {}".format(temp_file_name), shell=True, capture_output=True, encoding="latin-1", check=True)
+			r = subprocess.run(f"getdns_query -a -B -F {temp_file_name}", shell=True, capture_output=True, encoding="latin-1", check=True)
 		except Exception as e:
-			log("During lookup on {}, got '{}'".format(this_name, e))
+			log(f"During lookup on {this_name}: {e}")
 			return dict_to_return
-	this_stdout = r.stdout
+		this_stdout = r.stdout
 	# Get the two replies
 	try:
 		(a_dnssec_reply, aaaa_reply) = this_stdout.splitlines()
 	except Exception as e:
-		debug("Got {} when splitting reply for {}: {}".format(e, this_name, this_stdout))
+		debug(f"Got {e} when splitting reply for {this_name}: {this_stdout}")
 		return dict_to_return
 	try:
 		a_dnssec_dict = json.loads(a_dnssec_reply)
 	except Exception as e:
-		debug("Bad JSON for a_dnssec_dict '{}' for {}: {}".format(e, this_name, a_dnssec_reply))
+		debug(f"Bad JSON for a_dnssec_dict '{e}' for {this_name}: {a_dnssec_reply}")
 		return dict_to_return
 	# Parse for A addresses; if there are no A addresses, return {}
 	a_addr_list = a_dnssec_dict.get("just_address_answers")
@@ -42,13 +42,13 @@ def get_dns_for_one_name(this_name):
 			if this_rec["address_type"] == "IPv4":
 				dict_to_return["4"].append(this_rec["address_data"])
 	except Exception as e:
-		log("For v4 address extraction for {}, got {} for {}".format(this_name, e, a_addr_list))
+		log(f"For v4 address extraction for {this_name}, got {e} for {a_addr_list}")
 		return dict_to_return
 	# Parse for AAAA addresses
 	try:
 		aaaa_dict = json.loads(aaaa_reply)
 	except Exception as e:
-		debug("Bad JSON for aaaa_reply '{}' for {}: {}".format(e, this_name, a_dnssec_reply))
+		debug(f"Bad JSON for aaaa_reply {e} for {this_name}: {a_dnssec_reply}")
 		return dict_to_return
 	aaaa_addr_list = aaaa_dict.get("just_address_answers")
 	try:
@@ -56,13 +56,13 @@ def get_dns_for_one_name(this_name):
 			if this_rec["address_type"] == "IPv6":
 				dict_to_return["6"].append(this_rec["address_data"])
 	except Exception as e:
-		log("For v6 address extraction for {}, got {} for {}".format(this_name, e, aaaa_addr_list))
+		log(f"For v6 address extraction for {this_name}, got {e} for {aaaa_addr_list}")
 		return dict_to_return
 	# Get DNSSEC info
 	try:
 		dict_to_return["D"] = a_dnssec_dict["replies_tree"][0]["dnssec_status"]
 	except Exception as e:
-		log("For DNSSEC checking on {}, got {}:\n{}".format(this_name, e, a_dnssec_dict["replies_tree"]))
+		log(f"For DNSSEC checking on {this_name}, got {e}:\n{a_dnssec_dict['replies_tree']}")
 		return dict_to_return
 	return dict_to_return
 
@@ -71,8 +71,8 @@ if __name__ == "__main__":
 	main_dir = os.path.expanduser("~/wikipedia-dataset")
 	
 	# Set up the logging and alert mechanisms
-	log_file_name = "{}/log.txt".format(main_dir)
-	debug_file_name = "{}/debug.txt".format(main_dir)
+	log_file_name = f"{main_dir}/log.txt"
+	debug_file_name = f"{main_dir}/debug.txt"
 	this_log = logging.getLogger("logging")
 	this_log.setLevel(logging.INFO)
 	this_debug = logging.getLogger("alerts")
@@ -88,7 +88,7 @@ if __name__ == "__main__":
 	def debug(log_message):
 		this_debug.info(log_message)
 	def die(error_message):
-		log("{}. Exiting.".format(error_message))
+		log(f"{error_message}. Exiting.")
 		exit()
 	
 	this_parser = argparse.ArgumentParser()
@@ -96,20 +96,20 @@ if __name__ == "__main__":
 		help="Size of subset file to keep")
 	this_parser.add_argument("--limit_input", action="store", dest="limit_input", type=int, default=0,
 		help="Number of domains to test; 0 means all")
-	this_parser.add_argument("--input_file", action="store", dest="input_file", default="{}/sample-of-150000.txt".format(main_dir),
+	this_parser.add_argument("--input_file", action="store", dest="input_file", default=f"{main_dir}/sample-of-150000.txt",
 		help="Size of subset file to keep")
 	opts = this_parser.parse_args()
 
 	# Get the initial set of names
 	if not os.path.exists(opts.input_file):
-		die("Could not find {}".format(opts.input_file))
+		die(f"Could not find {opts.input_file}")
 	all_names = open(opts.input_file, "rt").read().splitlines()
 	
 	# If opts.limit_input is >0, limit the number of names to what is given 
 	if opts.limit_input > 0:
 		all_names = random.sample(all_names, opts.limit_input)
 	
-	log("Starting extract_addresses on {} records in {}".format(len(all_names), opts.input_file))
+	log(f"Starting extract_addresses on {len(all_names)} records in {opts.input_file}")
 
 	dns_results = {}
 	dns_failed = []
@@ -121,7 +121,7 @@ if __name__ == "__main__":
 			else:
 				dns_results[this_name] = returned_dict
 	
-	log("{} names did not have an IPv4 address".format(len(dns_failed)))
+	log(f"{len(dns_failed)} names did not have an IPv4 address")
 
 	dnssec_total = 0
 	ipv6_total = 0
@@ -130,26 +130,26 @@ if __name__ == "__main__":
 			dnssec_total += 1
 		if len(dns_results[this_name]["6"]) > 0:
 			ipv6_total += 1
-	log("Processing {} domains took {} seconds".format(len(dns_results), int(time.time()-dns_time_start)))
-	log("Of {} names in, {} ({}%) had IPv4 addresses".format(len(all_names), len(all_names) - len(dns_failed), 100 - int(100*(len(dns_failed)/len(all_names)))))
-	log("Of those domains, {}% had DNSSEC response of 400 and {}% had IPv6 addresses".format(int(100*(dnssec_total/len(dns_results))), int(100*(ipv6_total/len(dns_results)))))
+	log(f"Processing {len(dns_results)} domains took {int(time.time()-dns_time_start)} seconds")
+	log(f"Of {len(all_names)} names in, {len(all_names) - len(dns_failed)} ({100 - len(dns_failed)/len(all_names):.1f}%) had IPv4 addresses")
+	log(f"Of those domains, {100*(dnssec_total/len(dns_results)):.1f}% had DNSSEC response of 400 and {100*(ipv6_total/len(dns_results)):.1f}% had IPv6 addresses")
 	
 	# Keep the list of just the samples
 	dns_samples = {}
 
-	log("Culling results to {} values".format(opts.subset_size))
+	log(f"Culling results to {opts.subset_size} values")
 	sample_names = list(dns_results.keys())
 	sample_names = sample_names[:opts.subset_size]
 	for this_name in sample_names:
 		dns_samples[this_name] = dns_results[this_name]
 	
 	# Save the files
-	out_f = open("{}/dns_samples.pickle".format(main_dir), "wb")
+	out_f = open(f"{main_dir}/dns_samples.pickle", "wb")
 	pickle.dump(dns_samples, out_f)
 	out_f.close()
-	out_f = open("{}/dns_failed.txt".format(main_dir), "wt")
+	out_f = open(f"{main_dir}/dns_failed.txt", "wt")
 	for this_name in dns_failed:
-		out_f.write("{}\n".format(this_name))
+		out_f.write(f"{this_name}\n")
 	out_f.close()
 		
 	log("Finished extract_addresses run")

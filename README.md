@@ -19,14 +19,14 @@ The command line options are:
 - `--sources` is the domain name from which to get the Wikipedia data. It defaults to a server in the US. Note that some mirrors rate limit downloads after a set limit, so downloading might take a while.
 - `--subset_size` is the number of domain namnes to store in the sample file. It defaults to 150,000, which should be sufficient to make a real subset of 100,000 names with IPv4 addresses.
 
-The program puts out a file called `all_domains.txt`.
+The program puts out a file called `all-domains.txt`.
 It also creates a file called `sample-of-NNNN.txt`, where `NNNN` is the sample size chosen.
 
 The program requires the `curl` and `gunzip` programs to run.
 
 ##`wiki_results.py`
 
-This program takes the file of names as input, and analyzes the domain names in that file.
+This program takes the file of sample domain names as input, and analyzes the domain names in that file.
 It then puts out a smaller sample file where all the names have at least one IPv4 address.
 
 The command line options are:
