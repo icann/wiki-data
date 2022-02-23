@@ -35,9 +35,7 @@ The command line options are:
 - `--subset_size` is the number of names to take from the input file. The default is 100,000.
 - `--limit_input` is used for testing, Set the value to the number of names you want to test; 0 (the default) means all names.
 
-The results shown are the percentage of names that have IPv6 addresses, and the percentage of names that are DNSSEC-signed. More results are likely to be added later.
-
-The program requires the `getdns_query` program to run. This is available in most package managers in "getdns-utils".
+The results shown are the percentage of names that have IPv6 addresses, and the percentage of names that are DNSSEC-signed.
 
 ## Logs
 
