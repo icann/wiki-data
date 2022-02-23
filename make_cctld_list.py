@@ -39,6 +39,8 @@ if __name__ == "__main__":
 		parts = this_line.split(".")
 		if len(parts[-1]) == 2:
 			just_cctlds.add(this_line)
+			if this_line.startswith("www."):
+				just_cctlds.add(this_line[4:])
 	
 	# Save the file
 	log(f"Saving just_cctlds.txt with {len(just_cctlds)} names")
