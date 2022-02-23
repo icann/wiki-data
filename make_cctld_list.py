@@ -46,6 +46,6 @@ if __name__ == "__main__":
 	log(f"Saving just_cctlds.txt with {len(just_cctlds)} names")
 	with open(cctld_domains_filename, mode="wt") as out_f:
 		for this_domain in just_cctlds:
-			out_f.write(f"{this_domain}\n")
+			out_f.write(f"{this_domain}.\n")
 	log(f"Saved {cctld_domains_filename}")
 	
