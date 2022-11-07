@@ -5,7 +5,7 @@ import argparse, concurrent.futures, logging, json, os, pickle, random, subproce
 try:
 	r = subprocess.run("getdns_query -h", shell=True, capture_output=True, check=True)
 except:
-	exit("Could not run 'getdns_query -h'. Exiting.")
+	exit("Could not run 'getdns_query -h'. Exiting.") 
 
 def get_dns_for_one_name(this_name):
 	# Takes a domain name, does a query using getdns_query, and returns a dict of information about it
