@@ -10,7 +10,7 @@ Both of the programs below store logs and output files in `~/wikipedia-dataset`,
 
 ## `wiki_get_domains_from_databases.py`
 
-This program collects the relevant databases from Wikipedia, processes each file.
+This program collects the relevant databases from Wikipedia, and processes each file.
 
 The command line options are:
 
